@@ -20,7 +20,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var barrelNode: SKNode!
     var sahilNode: SKNode!
     var jumpNode: SKNode!
-    var birdNode: SKNode!
+    
     
     // Score-related variables
     var scoreNode: SKLabelNode!
@@ -57,7 +57,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // Consts controlling game movement
     let sahilHopForce = 750 as Int
     let cloudSpeed = 50 as CGFloat
-    let moonSpeed = 10 as CGFloat
+    let sunSpeed = 10 as CGFloat
     
     let background = 0 as CGFloat
     let foreground = 1 as CGFloat
@@ -66,7 +66,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let groundCategory = 1 << 0 as UInt32
     let sahilCategory = 1 << 1 as UInt32
     let barrelCategory = 1 << 2 as UInt32
-    let birdCategory = 1 << 3 as UInt32
+    
 
     // Scales
     var deadScale: CGFloat = 0.3
@@ -101,7 +101,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         //background elements
         backgroundNode = SKNode()
         backgroundNode.zPosition = background
-        createMoon()
+         createSun()
         createClouds()
         
         //sahil
@@ -113,9 +113,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         barrelNode = SKNode()
         barrelNode.zPosition = foreground
         
-        //birds
-        birdNode = SKNode()
-        birdNode.zPosition = foreground
+       
         
         //score
         let scoreHeight = self.frame.size.height
@@ -141,7 +139,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gameNode.addChild(backgroundNode)
         gameNode.addChild(sahilNode)
         gameNode.addChild(barrelNode)
-        gameNode.addChild(birdNode)
         gameNode.addChild(scoreNode)
         gameNode.addChild(resetInstructions)
         self.addChild(gameNode)
@@ -214,9 +211,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func didBegin(_ contact: SKPhysicsContact) {
         print("Contact: \(contact.bodyA.node), \(contact.bodyB.node)")
 
-        // If you hit a bird or a barrel, game over
+        // If you hit a barrel, game over
         if (!gameOverCheck) {
-            if(hitBarrel(contact) || hitBird(contact)){
+            if(hitBarrel(contact)) {
                 run(dieSound)
                 //resetInstructions.position = CGPoint(x: 1000, y: self.frame.midY)
                 gameOver()
@@ -228,15 +225,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    // Functions that check if you hit the ground, bird, barrel, etc.
+    // Functions that check if you hit the ground, barrel, etc.
     func hitBarrel(_ contact: SKPhysicsContact) -> Bool {
         return contact.bodyA.categoryBitMask & barrelCategory == barrelCategory ||
             contact.bodyB.categoryBitMask & barrelCategory == barrelCategory
-    }
-    
-    func hitBird(_ contact: SKPhysicsContact) -> Bool {
-        return contact.bodyA.categoryBitMask & birdCategory == birdCategory ||
-                contact.bodyB.categoryBitMask & birdCategory == birdCategory
     }
     
     func hitGround (_ contact: SKPhysicsContact) -> Bool {
@@ -302,7 +294,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Remove the children from all nodes.
         sahilNode.removeAllChildren()
         barrelNode.removeAllChildren()
-        birdNode.removeAllChildren()
 
         // Reinitialize Sahil
         createSahil()
@@ -392,37 +383,37 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         groundNode.addChild(groundContactNode)
     }
     
-    func createMoon() {
+    func  createSun() {
         //texture
-        let moonTexture = SKTexture(imageNamed: "sahil.assets/landscape/sun")
-        let moonScale = 1.0 as CGFloat
-        moonTexture.filteringMode = .nearest
+        let sunTexture = SKTexture(imageNamed: "sahil.assets/landscape/sun")
+        let sunScale = 1.0 as CGFloat
+        sunTexture.filteringMode = .nearest
         
-        //moon sprite
-        let moonSprite = SKSpriteNode(texture: moonTexture)
-        moonSprite.setScale(moonScale)
+        //sun sprite
+        let sunSprite = SKSpriteNode(texture: sunTexture)
+        sunSprite.setScale(sunScale)
         //add to scene
-        backgroundNode.addChild(moonSprite)
+        backgroundNode.addChild(sunSprite)
         
-        //animate the moon
-        animateMoon(sprite: moonSprite, textureWidth: moonTexture.size().width * moonScale)
+        //animate the sun
+        animateSun(sprite: sunSprite, textureWidth: sunTexture.size().width * sunScale)
     }
     
-    func animateMoon(sprite: SKSpriteNode, textureWidth: CGFloat) {
+    func animateSun(sprite: SKSpriteNode, textureWidth: CGFloat) {
         let screenWidth = self.frame.size.width
         let screenHeight = self.frame.size.height
         
-        let distanceOffscreen = 50.0 as CGFloat // want to start the moon offscreen
+        let distanceOffscreen = 50.0 as CGFloat // want to start the sun offscreen
         let distanceBelowTop = 150 as CGFloat
         
-        //moon actions
-        let moveMoon = SKAction.moveBy(x: -screenWidth - textureWidth - distanceOffscreen,
-                                       y: 0.0, duration: TimeInterval(screenWidth / moonSpeed))
-        let resetMoon = SKAction.moveBy(x: screenWidth + distanceOffscreen, y: 0.0, duration: 0)
-        let moonLoop = SKAction.sequence([moveMoon, resetMoon])
+        //sun actions
+        let moveSun = SKAction.moveBy(x: -screenWidth - textureWidth - distanceOffscreen,
+                                       y: 0.0, duration: TimeInterval(screenWidth / sunSpeed))
+        let resetSun = SKAction.moveBy(x: screenWidth + distanceOffscreen, y: 0.0, duration: 0)
+        let sunLoop = SKAction.sequence([moveSun, resetSun])
         
         sprite.position = CGPoint(x: screenWidth + distanceOffscreen, y: screenHeight - distanceBelowTop)
-        sprite.run(SKAction.repeatForever(moonLoop))
+        sprite.run(SKAction.repeatForever(sunLoop))
     }
     
     func createClouds() {
@@ -481,7 +472,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         activeSprite.physicsBody?.isDynamic = true
         activeSprite.physicsBody?.mass = 1.0
         activeSprite.physicsBody?.categoryBitMask = sahilCategory
-        activeSprite.physicsBody?.contactTestBitMask = birdCategory | barrelCategory | groundCategory
+        activeSprite.physicsBody?.contactTestBitMask = barrelCategory | groundCategory
         activeSprite.physicsBody?.collisionBitMask = groundCategory
         activeSprite.physicsBody?.restitution = 0.0
         
@@ -578,3 +569,5 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
 }
 
+// credits to John Kuhn for code references
+// credits to StackOverFlow's websites and guidance for assistance with jump mechanics
